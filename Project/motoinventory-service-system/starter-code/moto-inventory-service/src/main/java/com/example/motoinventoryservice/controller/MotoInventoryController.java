@@ -1,6 +1,7 @@
 package com.example.motoinventoryservice.controller;
 
 import com.example.motoinventoryservice.model.Motorcycle;
+import com.example.motoinventoryservice.model.Vehicle;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -11,6 +12,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -30,27 +32,39 @@ public class MotoInventoryController {
     private String serviceProtocol;
     @Value("${servicePath}")
     private String servicePath;
-    @Value("${type}")
-    private String type;
-    @Value("${make}")
-    private String make;
-    @Value("${model}")
-    private String model;
-    @Value("${year}")
-    private String year;
-    @Value("${color}")
-    private String color;
+//    @Value("${type}")
+//    private String type;
+//    @Value("${make}")
+//    private String make;
+//    @Value("${model}")
+//    private String model;
+//    @Value("${year}")
+//    private String year;
+//    @Value("${color}")
+//    private String color;
 
 
 
     @RequestMapping(value="/vehicle/{vin}", method = RequestMethod.GET)
-    public Map<String, String> getVehicle() {
-//        List<ServiceInstance> instances = discoveryClient.getInstances(randomGreetingServiceName);
-//        String randomGreetingServiceUri = serviceProtocol + instances.get(0).getHost() + ":" + instances.get(0).getPort() + servicePath;
-//        String greeting = restTemplate.getForObject(randomGreetingServiceUri, String.class);
-//        return greeting;
+    public Map<String, String> getVehicle(@PathVariable("vin") String vin) {
+        List<ServiceInstance> instances = discoveryClient.getInstances(vinLookupServiceName);
+        String lookUpVehicleUri = serviceProtocol + instances.get(0).getHost() + ":" + instances.get(0).getPort() + servicePath + vin;
+        Vehicle vehicle = restTemplate.getForObject(lookUpVehicleUri, Vehicle.class);
+        Map<String, String> map = new HashMap<>();
 
+        map.put("Vehicle Type", vehicle.getType());
+        map.put("Vehicle Make", vehicle.getMake());
+        map.put("Vehicle Model", vehicle.getYear());
+        map.put("Vehicle Year", vehicle.getYear());
+        map.put("Vehicle Color", vehicle.getColor());
 
+//        Key = "Vehicle Type", Value = Value returned from VIN Lookup Service
+//                Key = "Vehicle Make", Value = Value returned from VIN Lookup Service
+//                Key = "Vehicle Model", Value = Value returned from VIN Lookup Service
+//                Key = "Vehicle Year", Value = Value returned from VIN Lookup Service
+//                Key = "Vehicle Color", Value = Value returned from VIN Lookup Service
+
+        return map ;
     }
 
     @RequestMapping(value = "/motorcycles", method = RequestMethod.POST)
