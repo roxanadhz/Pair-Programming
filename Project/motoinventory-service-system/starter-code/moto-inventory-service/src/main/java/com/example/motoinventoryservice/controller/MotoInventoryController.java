@@ -9,7 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -17,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-@RefreshScope
 @RestController
+@RefreshScope
 public class MotoInventoryController {
 
     @Autowired
@@ -26,8 +30,8 @@ public class MotoInventoryController {
 
     private RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${vinLookupServiceName}")
-    private String vinLookupServiceName;
+    @Value("${vinLookupService}")
+    private String vinLookupService;
     @Value("${serviceProtocol}")
     private String serviceProtocol;
     @Value("${servicePath}")
@@ -46,17 +50,21 @@ public class MotoInventoryController {
 
 
     @RequestMapping(value="/vehicle/{vin}", method = RequestMethod.GET)
-    public Map<String, String> getVehicle(@PathVariable("vin") String vin) {
-        List<ServiceInstance> instances = discoveryClient.getInstances(vinLookupServiceName);
+    @ResponseStatus(value = HttpStatus.OK)
+    public Map<String, String> getVehicle(@PathVariable String vin) {
+        List<ServiceInstance> instances = discoveryClient.getInstances(vinLookupService);
         String lookUpVehicleUri = serviceProtocol + instances.get(0).getHost() + ":" + instances.get(0).getPort() + servicePath + vin;
         Vehicle vehicle = restTemplate.getForObject(lookUpVehicleUri, Vehicle.class);
         Map<String, String> map = new HashMap<>();
+
 
         map.put("Vehicle Type", vehicle.getType());
         map.put("Vehicle Make", vehicle.getMake());
         map.put("Vehicle Model", vehicle.getYear());
         map.put("Vehicle Year", vehicle.getYear());
         map.put("Vehicle Color", vehicle.getColor());
+
+        System.out.println(map);
 
 //        Key = "Vehicle Type", Value = Value returned from VIN Lookup Service
 //                Key = "Vehicle Make", Value = Value returned from VIN Lookup Service

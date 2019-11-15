@@ -1,4 +1,4 @@
-package com.example.motoinventoryservice;
+package com.example.motoinventoryservice.dao;
 
 import com.example.motoinventoryservice.dao.MotoInventoryDao;
 import com.example.motoinventoryservice.model.Motorcycle;
